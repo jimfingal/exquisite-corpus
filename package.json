@@ -1,0 +1,34 @@
+{
+  "name": "sentimental-education",
+  "version": "0.0.1",
+  "description": "TBD",
+  "private": true,
+  "devDependencies": {
+    "nodemon": "^1.1.1"
+  },
+  "dependencies": {
+    "async": "^0.9.0",
+    "mongodb": "^1.4.5",
+    "oauth": "^0.9.12",
+    "request": "^2.36.0",
+    "twit": "^1.1.15",
+    "twitter-text": "^1.9.0",
+    "underscore": "^1.6.0"
+  },
+  "engines": {
+    "node": "0.10.26",
+    "npm": "1.4.6"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "node_modules/.bin/bower install"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "jimmytheleaf",
+  "bugs": {
+    "url": ""
+  }
+}
