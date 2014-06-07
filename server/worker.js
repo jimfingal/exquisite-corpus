@@ -4,8 +4,14 @@ var async = require('async');
 var twitterhelper = require('./twitterhelper');
 var mongohelper = require('./mongohelper');
 var config = require('./config');
+var bootstrap = require('./bootstrap');
 
 var MongoClient = require('mongodb').MongoClient;
+
+
+if (config.twitter.bootstrap) {
+  bootstrap.insertAllFriendsAndFollowers(config.twitter.bootstrapuser);
+}
 
 
 var handleTweet = function(tweet) {
@@ -38,7 +44,7 @@ var streamUsersInDB = function() {
   });
 };
 
-streamUsersInDB();
+// streamUsersInDB();
 
 
 

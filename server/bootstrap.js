@@ -58,6 +58,10 @@ var insertAllFriendsAndFollowers = function(screen_name) {
 
 };
 
+
+module.exports.insertAllFriendsAndFollowers = insertAllFriendsAndFollowers;
+
+
 if (config.twitter.bootstrap) {
   insertAllFriendsAndFollowers(config.twitter.bootstrapuser);
 }
