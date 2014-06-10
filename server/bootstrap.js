@@ -3,10 +3,15 @@ var async = require('async');
 var twitterhelper = require('./twitterhelper');
 var mongohelper = require('./mongohelper');
 var config = require('./config');
-
-
+var MongoClient = require('mongodb').MongoClient;
 
 var insertUser = function(userdoc) {
+  MongoClient.connect(config.mongo.CONNECTION, function(err, database) {
+  if (err) throw err;
+  db = database;
+  gracefulshutdown.addShutdownCallback(closeConnection);
+});
+
   mongohelper.insertDocument(config.mongo.USER_COLLECTION, userdoc);
 };
 
@@ -62,6 +67,4 @@ var insertAllFriendsAndFollowers = function(screen_name) {
 module.exports.insertAllFriendsAndFollowers = insertAllFriendsAndFollowers;
 
 
-if (config.twitter.bootstrap) {
-  insertAllFriendsAndFollowers(config.twitter.bootstrapuser);
-}
+

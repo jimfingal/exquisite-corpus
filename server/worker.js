@@ -44,7 +44,7 @@ var streamUsersInDB = function() {
   });
 };
 
-// streamUsersInDB();
+streamUsersInDB();
 
 
 
