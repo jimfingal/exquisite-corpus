@@ -2,19 +2,16 @@ var express = require('express'),
   http = require('http'),
   https = require('https'),
   path = require('path'),
-  connect = require('connect'),
-  config = require('./config'),
-  mongohelper = require('./mongohelper');
-
-var base_dir = path.join(__dirname, '/../app/');
-console.log(base_dir);
+  flow = require("asyncflow"),
+  config = require('./lib/config'),
+  mongohelper = require('./lib/mongohelper');
 
 var app = express();
 
 app.set('port', config.web.PORT);
-app.set('views', path.join(base_dir + 'views'));
+app.set('views', path.join(__dirname + '/views'));
 app.set('view engine', 'jade');
-app.use(express.static(path.join(base_dir, 'public')));
+app.use(express.static(path.join(__dirname, '/public')));
 
 
 app.get('/', function(req, res) {
@@ -40,15 +37,18 @@ app.get('/users', function(req, res) {
 
 
 
-var flow = require("asyncflow");
 var initDb = flow.wrap(mongohelper.initDb);
 
 flow(function() {
   console.log("Initializing DB");
   var done = initDb().wait();
+
   console.log("Starting Server");
   var server = http.createServer(app).listen(app.get('port'));
   console.log('Listening on: ' + app.get('port'));
+
+  //console.log("Listening to stream");
+  //streamhandler.streamUsersInDB();
 });
 
 
