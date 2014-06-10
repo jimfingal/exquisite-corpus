@@ -122,9 +122,21 @@ var copyCollection = function(from_conn, from_coll, to_conn, to_coll) {
 };
 
 
+var mapReduce = function(collection, mapper, reducer, callback) {
+   db.collection(collection).mapReduce(
+        mapper,
+        reducer,
+        { out: { inline: 1}, verbose: true},
+        callback
+    );
+};
+
+
+
 
 module.exports.insertDocumentIfDoesntExist = insertDocumentIfDoesntExist;
 module.exports.insertDocument = insertDocument;
 module.exports.find = find;
 module.exports.initDb = initDb;
 module.exports.copyCollection = copyCollection;
+module.exports.mapReduce = mapReduce;
