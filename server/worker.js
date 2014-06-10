@@ -8,14 +8,12 @@ var bootstrap = require('./bootstrap');
 
 var MongoClient = require('mongodb').MongoClient;
 
-
 if (config.twitter.bootstrap) {
   bootstrap.insertAllFriendsAndFollowers(config.twitter.bootstrapuser);
 }
 
-
 var handleTweet = function(tweet) {
-  console.log(tweet);
+  console.log(tweet.text);
   mongohelper.insertDocument(config.mongo.TWEET_COLLECTION, tweet);
 };
 
@@ -44,7 +42,6 @@ var streamUsersInDB = function() {
   });
 };
 
-streamUsersInDB();
-
+mongohelper.initDbThen(streamUsersInDB);
 
 

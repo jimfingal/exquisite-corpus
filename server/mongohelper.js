@@ -7,6 +7,7 @@ var config = require('./config');
 var MongoClient = require('mongodb').MongoClient;
 var db;
 
+var initialized = false;
 var closed = false;
 
 var closeConnection = function() {
@@ -17,13 +18,6 @@ var closeConnection = function() {
 };
 
 // Initialize connection once
-MongoClient.connect(config.mongo.CONNECTION, function(err, database) {
-  if (err) throw err;
-  db = database;
-  gracefulshutdown.addShutdownCallback(closeConnection);
-});
-
-
 var insertErrorCheck = function(err, inserted) {
     if (err) {
         console.log('Error: ' + err);
@@ -39,10 +33,32 @@ var find = function(database, collection, query, callback) {
     database.collection(collection).find(query).toArray(callback);
 };
 
-
 var getDB = function() {
     return db;
 };
 
+// Call at beginning of application
+var initDbThen = function(callback) {
+  if (!initialized) {
+      MongoClient.connect(config.mongo.CONNECTION, function(err, database) {
+      if (err) {
+        throw err;
+      } else {
+        initialized = true;
+      }
+      db = database;
+      gracefulshutdown.addShutdownCallback(closeConnection);
+      callback();
+    });
+  }
+};
+
+var initDb = function() {
+  initDbThen(function() {});
+};
+
+
 module.exports.insertDocument = insertDocument;
 module.exports.find = find;
+module.exports.initDbThen = initDbThen;
+module.exports.initDb = initDb;
