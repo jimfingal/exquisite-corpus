@@ -12,8 +12,8 @@ var stream;
 var user_ids = [];
 
 var handleTweet = function(tweet) {
-  if (_.indexOf(user_ids, tweet['id_str']) > -1) {
-    console.log(tweet.screenname + " : " + tweet.text);
+  if (_.indexOf(user_ids, tweet['user']['id_str']) > -1) {
+    console.log(tweet['user']['screen_name'] + " : " + tweet.text);
     mongohelper.insertDocument(config.mongo.TWEET_COLLECTION, tweet);
   } else {
     console.log("Got tweet not from user: " + tweet.text);
