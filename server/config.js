@@ -16,7 +16,7 @@ config.twitter.ACCESS_TOKEN_SECRET = process.env.TWITTER_ACCESS_TOKEN_SECRET_SEN
 
 config.process.SHUTDOWN_WAIT = 2;
 
-config.twitter.bootstrap = false;
+config.twitter.bootstrap = true;
 config.twitter.bootstrapuser = "jimfingal";
 
 var DB_NAME = "sentimentaled";
@@ -27,6 +27,7 @@ config.mongo.LOCAL_MONGOHQ = process.env.LOCAL_MONGOHQ;
 
 config.mongo.USER_COLLECTION = "users";
 config.mongo.TWEET_COLLECTION = "tweets";
+config.mongo.RETWEET_COLLECTION = "retweets";
 
 
 config.twitter.ENABLE_STREAM = true;

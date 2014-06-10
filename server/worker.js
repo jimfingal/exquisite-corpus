@@ -8,16 +8,18 @@ var bootstrap = require('./bootstrap');
 
 var MongoClient = require('mongodb').MongoClient;
 
-if (config.twitter.bootstrap) {
-  bootstrap.insertAllFriendsAndFollowers(config.twitter.bootstrapuser);
-}
+var stream;
+var user_ids = [];
 
 var handleTweet = function(tweet) {
-  console.log(tweet.text);
-  mongohelper.insertDocument(config.mongo.TWEET_COLLECTION, tweet);
+  if (_.indexOf(user_ids, tweet['id_str']) > -1) {
+    console.log(tweet.screenname + " : " + tweet.text);
+    mongohelper.insertDocument(config.mongo.TWEET_COLLECTION, tweet);
+  } else {
+    console.log("Got tweet not from user: " + tweet.text);
+    mongohelper.insertDocument(config.mongo.RETWEET_COLLECTION, tweet);
+  }
 };
-
-var stream;
 
 var streamUsersInDB = function() {
 
@@ -27,7 +29,7 @@ var streamUsersInDB = function() {
 
     database.collection(config.mongo.USER_COLLECTION).find({}).toArray(function(err, docs) {
 
-      var user_ids = _.map(docs, function(doc) {
+      user_ids = _.map(docs, function(doc) {
         return doc['id_str'];
       });
       var follow = user_ids.join(',');
@@ -42,6 +44,13 @@ var streamUsersInDB = function() {
   });
 };
 
-mongohelper.initDbThen(streamUsersInDB);
+
+if (config.twitter.bootstrap) {
+  mongohelper.initDbThen(function() {
+      bootstrap.insertAllFriendsAndFollowers(config.twitter.bootstrapuser, streamUsersInDB);
+  });
+} else {
+  mongohelper.initDbThen(streamUsersInDB);
+}
 
 

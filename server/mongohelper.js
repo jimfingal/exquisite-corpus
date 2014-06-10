@@ -17,17 +17,40 @@ var closeConnection = function() {
     }
 };
 
-// Initialize connection once
-var insertErrorCheck = function(err, inserted) {
-    if (err) {
-        console.log('Error: ' + err);
-        return;
-    }
+
+
+var insertDocument = function(collection, doc, async_callback) {
+    db.collection(collection).insert(doc, function(err, inserted) {
+        if (err) {
+          if (async_callback) {
+              async_callback(err, inserted['_id']);
+          }
+        }
+        if (async_callback) {
+          async_callback(null, inserted['_id']);
+        }
+    });
 };
 
-var insertDocument = function(collection, doc) {
-    db.collection(collection).insert(doc, insertErrorCheck);
+var insertDocumentIfDoesntExist = function(collection, doc, async_callback) {
+
+  db.collection(collection).findOne({'_id': doc['_id']}, function(err, exists) {
+    if (err) {
+      if (async_callback) {
+        async_callback(err, 'error inserting doc');
+      }
+    } else {
+      if (exists) {
+        if (async_callback) {
+          async_callback(null, doc['_id']);
+        }
+      } else {
+        insertDocument(collection, doc, async_callback);
+      }
+    }
+  });
 };
+
 
 var find = function(database, collection, query, callback) {
     database.collection(collection).find(query).toArray(callback);
@@ -50,6 +73,8 @@ var initDbThen = function(callback) {
       gracefulshutdown.addShutdownCallback(closeConnection);
       callback();
     });
+  } else {
+    callback();
   }
 };
 
@@ -58,6 +83,7 @@ var initDb = function() {
 };
 
 
+module.exports.insertDocumentIfDoesntExist = insertDocumentIfDoesntExist;
 module.exports.insertDocument = insertDocument;
 module.exports.find = find;
 module.exports.initDbThen = initDbThen;
