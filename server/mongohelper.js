@@ -3,6 +3,7 @@ var MongoClient = require('mongodb').MongoClient;
 var _ = require('underscore');
 var gracefulshutdown = require('./gracefulshutdown');
 var config = require('./config');
+var async = require('async');
 
 var MongoClient = require('mongodb').MongoClient;
 var db;
@@ -19,8 +20,9 @@ var closeConnection = function() {
 
 
 
-var insertDocument = function(collection, doc, async_callback) {
-    db.collection(collection).insert(doc, function(err, inserted) {
+var insertDocumentIntoDB = function(provided_db, collection, doc, async_callback) {
+
+   provided_db.collection(collection).insert(doc, function(err, inserted) {
         if (err) {
           if (async_callback) {
               async_callback(err, inserted['_id']);
@@ -30,6 +32,12 @@ var insertDocument = function(collection, doc, async_callback) {
           async_callback(null, inserted['_id']);
         }
     });
+
+};
+
+
+var insertDocument = function(collection, doc, async_callback) {
+   insertDocumentIntoDB(db, collection, doc, async_callback);
 };
 
 var insertDocumentIfDoesntExist = function(collection, doc, async_callback) {
@@ -83,7 +91,40 @@ var initDb = function(callback) {
 };
 
 
+var copyCollection = function(from_conn, from_coll, to_conn, to_coll) {
+  console.log("From: " + from_conn);
+  console.log("From Coll: " + from_coll);
+  console.log("To: " + to_conn);
+  console.log("From coll: " + to_coll);
+
+  MongoClient.connect(from_conn, function(err, db) {
+    if (err) throw err;
+    db.collection(from_coll).find().toArray(function(err, documents) {
+        if (err) throw err;
+        MongoClient.connect(to_conn, function(err2, db2) {
+           if (err2) throw err2;
+
+           var inserts = [];
+            _.each(documents, function(doc) {
+              inserts.push(function(callback) {
+                  insertDocumentIntoDB(db2, to_coll, doc, callback);
+              });
+            });
+
+            async.parallel(inserts, function(err, results) {
+                db2.close();
+                db.close();
+            });
+        });
+    });
+
+  });
+};
+
+
+
 module.exports.insertDocumentIfDoesntExist = insertDocumentIfDoesntExist;
 module.exports.insertDocument = insertDocument;
 module.exports.find = find;
 module.exports.initDb = initDb;
+module.exports.copyCollection = copyCollection;

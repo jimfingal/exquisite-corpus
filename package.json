@@ -9,6 +9,7 @@
   "dependencies": {
     "async": "^0.9.0",
     "asyncflow": "^0.2.1",
+    "minimist": "^0.1.0",
     "mongodb": "^1.4.5",
     "oauth": "^0.9.12",
     "request": "^2.36.0",
