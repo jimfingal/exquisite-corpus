@@ -52,39 +52,38 @@ var insertDocumentIfDoesntExist = function(collection, doc, async_callback) {
 };
 
 
-var find = function(database, collection, query, callback) {
-    database.collection(collection).find(query).toArray(callback);
+var find = function(collection, query, callback) {
+    db.collection(collection).find(query).toArray(callback);
 };
 
 var getDB = function() {
     return db;
 };
 
-// Call at beginning of application
-var initDbThen = function(callback) {
+var initDb = function(callback) {
+
+  if (callback === undefined) {
+    callback = function() {};
+  }
+
   if (!initialized) {
       MongoClient.connect(config.mongo.CONNECTION, function(err, database) {
-      if (err) {
-        throw err;
-      } else {
-        initialized = true;
-      }
-      db = database;
-      gracefulshutdown.addShutdownCallback(closeConnection);
-      callback();
+        if (err) {
+          throw err;
+        } else {
+          initialized = true;
+        }
+        db = database;
+        gracefulshutdown.addShutdownCallback(closeConnection);
+        callback();
     });
   } else {
     callback();
   }
 };
 
-var initDb = function() {
-  initDbThen(function() {});
-};
-
 
 module.exports.insertDocumentIfDoesntExist = insertDocumentIfDoesntExist;
 module.exports.insertDocument = insertDocument;
 module.exports.find = find;
-module.exports.initDbThen = initDbThen;
 module.exports.initDb = initDb;

@@ -16,7 +16,7 @@ config.twitter.ACCESS_TOKEN_SECRET = process.env.TWITTER_ACCESS_TOKEN_SECRET_SEN
 
 config.process.SHUTDOWN_WAIT = 2;
 
-config.twitter.bootstrap = false;
+config.twitter.bootstrap = true;
 config.twitter.bootstrapuser = "jimfingal";
 
 var DB_NAME = "sentimentaled";
