@@ -1,4 +1,5 @@
-define(['d3', 'lib/easing.js'], function(d3, easing) {
+define(['d3', 'lib/easing.js', 'underscore'], 
+       function(d3, easing, _) {
 
   var socket;
   var svg;
@@ -47,7 +48,7 @@ define(['d3', 'lib/easing.js'], function(d3, easing) {
 
         var xScale = d3.scale.ordinal()
             .domain(d3.range(bands))
-            .rangeRoundBands([0, svg_width], 0.05);
+            .rangeRoundBands([0, svg_width - (2 * 30)], 0.05);
 
         bars.attr("x", function(d, i) {
                 return xScale(i);
@@ -64,50 +65,87 @@ define(['d3', 'lib/easing.js'], function(d3, easing) {
             });
   };
 
+ var scaleText = function(text, bands) {
+
+        var yScale = d3.scale.linear()
+            .domain([0, d3.max(current_dataset, function(d) { return d.value.tweets.length; })])
+            .range([0, svg_height]);
+
+        var xScale = d3.scale.ordinal()
+            .domain(d3.range(bands))
+            .rangeRoundBands([0, svg_width - (2 * 30)], 0.05);
+
+        text.attr("x", function(d, i) {
+            return xScale(i) + xScale.rangeBand() / 2;
+           })
+           .attr("y", function(d) {
+                return svg_height - yScale(d.value.tweets.length) + 14;
+           });
+  };
+
 
   var resizeGraph = function(dataset, bands) {
 
         var bars = svg.selectAll("rect").data(dataset);
         scaleBars(bars.transition().duration(1), bands);
+
+        var text = svg.selectAll("text").data(dataset);
+        scaleText(text, bands);
+  };
+
+
+  var getEmptyRecord = function(id) {
+    return {
+        '_id': id,
+        'value': { 'tweets': [] }
+    };
+  };
+
+  var cleanedDataset = function(dataset, bands) {
+
+    var cloned_ds = _.clone(dataset);
+
+    _.each(_.range(bands), function(i) {
+        if (!cloned_ds[i] || cloned_ds[i]['_id'] !== i) {
+            console.log('Got here');
+            cloned_ds.splice(i, 0, getEmptyRecord(i));
+        }
+    });
+
+    console.log(cloned_ds);
+
+    return cloned_ds;
   };
 
   var calculateGraph = function(bands) {
 
     current_bands = bands;
 
-    $.getJSON('/tweets/bytime/' + bands, function(dataset) {
+    $.getJSON('/tweets/bytime/' + bands, function(ds) {
 
-        current_dataset = dataset;
+        current_dataset = cleanedDataset(ds, bands);
 
         var key = function(d) {
             return d._id;
         };
 
         scaleBars(svg.selectAll("rect")
-           .data(dataset, key)      //Bind data with custom key function
+           .data(current_dataset, key)      //Bind data with custom key function
            .enter()
            .append("rect"), bands);
 
-        /*
             //Create labels
-            svg.selectAll("text")
-               .data(dataset, key)      //Bind data with custom key function
+        scaleText(svg.selectAll("text")
+               .data(current_dataset, key)      //Bind data with custom key function
                .enter()
                .append("text")
                .text(function(d, i) {
                     return d._id + " :: " + d.value.tweets.length;
                })
                .attr("text-anchor", "middle")
-               .attr("x", function(d, i) {
-                    return xScale(i) + xScale.rangeBand() / 2;
-               })
-               .attr("y", function(d) {
-                    return svg_height - yScale(d.value.tweets.length) + 14;
-               })
                .attr("font-family", "sans-serif")
                .attr("font-size", "11px")
-               .attr("fill", "white");
-        */
+               .attr("fill", "white"), bands);        
     });
 
   };
