@@ -1,4 +1,4 @@
-define(['d3', 'lib/easing.js', 'underscore'], 
+define(['d3', 'lib/easing.js', 'underscore'],
        function(d3, easing, _) {
 
   var socket;
@@ -8,6 +8,7 @@ define(['d3', 'lib/easing.js', 'underscore'],
 
   var current_dataset;
   var current_bands;
+  var current_scale = {};
 
   var c1 = 205, c2 = 147, c3 = 176;
   var colors = [];
@@ -26,10 +27,11 @@ define(['d3', 'lib/easing.js', 'underscore'],
   colors = colors.reverse();
 
 
-  var getFillStyle = function(percent) {
+  var getFillStyle = function(percent, alpha_override) {
 
-    var alpha = easing_functions.easeOutCubic(percent, 0, 1, 1);
-    var index = Math.floor(easing_functions.easeInCubic(percent, 0, 1, 1) * 10);
+    //var alpha = easing_functions.linear(percent, 0, 1, 1);
+    var alpha = alpha_override || 0.8;
+    var index = Math.floor(easing_functions.linear(percent, 0, 1, 1) * 10);
     if (index === 10) {
         index = 9;
     }
@@ -40,57 +42,56 @@ define(['d3', 'lib/easing.js', 'underscore'],
     return fill;
   };
 
+
+  var setScale = function(current_dataset, bands) {
+
+    var yScale = d3.scale.linear()
+        .domain([0, d3.max(current_dataset, function(d) { return d.value.tweets.length; })])
+        .range([0, svg_height]);
+
+    var xScale = d3.scale.ordinal()
+        .domain(d3.range(bands))
+        .rangeRoundBands([0, svg_width - (2 * 30)], 0.05);
+
+    current_scale['x'] = xScale;
+    current_scale['y'] = yScale;
+  };
+
    var scaleBars = function(bars, bands) {
 
-        var yScale = d3.scale.linear()
-            .domain([0, d3.max(current_dataset, function(d) { return d.value.tweets.length; })])
-            .range([0, svg_height]);
-
-        var xScale = d3.scale.ordinal()
-            .domain(d3.range(bands))
-            .rangeRoundBands([0, svg_width - (2 * 30)], 0.05);
-
         bars.attr("x", function(d, i) {
-                return xScale(i);
+                return current_scale.x(i);
             })
             .attr("y", function(d) {
-                return svg_height - yScale(d.value.tweets.length);
+                return svg_height - current_scale.y(d.value.tweets.length);
             })
-            .attr("width", xScale.rangeBand())
+            .attr("width", current_scale.x.rangeBand())
             .attr("height", function(d) {
-                return yScale(d.value.tweets.length);
-            })
-            .attr("fill", function(d) {
-                return getFillStyle(yScale(d.value.tweets.length) / svg_height);
+                return current_scale.y(d.value.tweets.length);
             });
   };
 
  var scaleText = function(text, bands) {
 
-        var yScale = d3.scale.linear()
-            .domain([0, d3.max(current_dataset, function(d) { return d.value.tweets.length; })])
-            .range([0, svg_height]);
-
-        var xScale = d3.scale.ordinal()
-            .domain(d3.range(bands))
-            .rangeRoundBands([0, svg_width - (2 * 30)], 0.05);
 
         text.attr("x", function(d, i) {
-            return xScale(i) + xScale.rangeBand() / 2;
+            return current_scale.x(i) + current_scale.x.rangeBand() / 2;
            })
            .attr("y", function(d) {
-                return svg_height - yScale(d.value.tweets.length) + 14;
+                return svg_height - current_scale.y(d.value.tweets.length) + 14;
            });
   };
 
 
   var resizeGraph = function(dataset, bands) {
 
+        setScale(dataset, bands);
+
         var bars = svg.selectAll("rect").data(dataset);
         scaleBars(bars.transition().duration(1), bands);
 
-        var text = svg.selectAll("text").data(dataset);
-        scaleText(text, bands);
+        //var text = svg.selectAll("text").data(dataset);
+        //scaleText(text, bands);
   };
 
 
@@ -129,12 +130,46 @@ define(['d3', 'lib/easing.js', 'underscore'],
             return d._id;
         };
 
+
+        setScale(current_dataset, bands);
+
         scaleBars(svg.selectAll("rect")
            .data(current_dataset, key)      //Bind data with custom key function
            .enter()
-           .append("rect"), bands);
+           .append("rect")
+           .attr("fill", function(d) {
+                return getFillStyle(current_scale.y(d.value.tweets.length) / svg_height);
+            })
+           .on("mouseover", function(d) {
+                d3.select(this)
+                  .transition(1000)
+                  .attr("fill", getFillStyle(current_scale.y(d.value.tweets.length) / svg_height, 1));
 
-            //Create labels
+                //Get this bar's x/y values, then augment for the tooltip
+                var xPosition = parseFloat(d3.select(this).attr("x")) + current_scale.x.rangeBand() / 2;
+                var yPosition = Math.max(0, parseFloat(d3.select(this).attr("y")) - 40);
+
+                //Update the tooltip position and value
+                d3.select("#tooltip")
+                  .style("left", xPosition + "px")
+                  .style("top", yPosition + "px")
+                  .select("#value")
+                  .text(d._id + " hours had " + d.value.tweets.length + " tweets.");
+
+                //Show the tooltip
+                d3.select("#tooltip").classed("hidden", false);
+           })
+           .on("mouseout", function(d) {
+                d3.select(this)
+                  .transition(1000)
+                  .attr("fill", getFillStyle(current_scale.y(d.value.tweets.length) / svg_height));
+
+                d3.select("#tooltip").classed("hidden", true);
+
+            }), bands);
+
+        //Create labels
+        /*
         scaleText(svg.selectAll("text")
                .data(current_dataset, key)      //Bind data with custom key function
                .enter()
@@ -145,7 +180,8 @@ define(['d3', 'lib/easing.js', 'underscore'],
                .attr("text-anchor", "middle")
                .attr("font-family", "sans-serif")
                .attr("font-size", "11px")
-               .attr("fill", "white"), bands);        
+               .attr("fill", "white"), bands); 
+        */       
     });
 
   };
@@ -165,7 +201,6 @@ define(['d3', 'lib/easing.js', 'underscore'],
          .attr("height", svg_height);
 
         if (current_dataset) {
-
           resizeGraph(current_dataset, current_bands);
         }
     };
