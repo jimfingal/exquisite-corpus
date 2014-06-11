@@ -4,7 +4,8 @@ var express = require('express'),
   path = require('path'),
   flow = require("asyncflow"),
   config = require('./lib/config'),
-  mongohelper = require('./lib/mongohelper');
+  mongohelper = require('./lib/mongohelper'),
+  io = require('socket.io');
 
 var app = express();
 
@@ -44,7 +45,16 @@ flow(function() {
   var done = initDb().wait();
 
   console.log("Starting Server");
-  var server = http.createServer(app).listen(app.get('port'));
+  var server = http.createServer(app);
+  var serverio = io.listen(server);
+
+  serverio.sockets.on('connection', function(socket) {
+    // TODO
+  });
+
+  server.listen(app.get('port'));
+
+
   console.log('Listening on: ' + app.get('port'));
 
   //console.log("Listening to stream");
