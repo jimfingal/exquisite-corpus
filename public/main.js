@@ -1,8 +1,7 @@
-requirejs(['lib/sockethelper', 'jquery', 'd3'],
-  function(sockethelper, $, d3) {
+requirejs(['lib/sockethelper', 'jquery', 'lib/visualizer'],
+  function(sockethelper, $, Visualizer) {
     var socket = sockethelper.getSocket();
 
-    $.getJSON('/users', function(data) {
-      $('#console').text(data);
-    });
+    var vis = new Visualizer(socket);
+    vis.load();
 });
