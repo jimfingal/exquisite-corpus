@@ -27,12 +27,12 @@ var reduce = function(key, values) {
     return {'tweets': values};
 };
 
-app.get('/users/:buckets', function(req, res) {
+app.get('/tweets/bytime/:buckets', function(req, res) {
   mongohelper.mapReduce(
     config.mongo.TWEET_COLLECTION,
     timehelper.mapper,
     reduce,
-    timehelper.getScope(req.params.buckets),
+    timehelper.getScope(req.params.buckets, -7),
     function(err, results, stats) {
       console.log(err);
       res.json(results);
