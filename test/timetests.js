@@ -29,45 +29,45 @@ describe('timehelper', function() {
     describe('Calculating Buckets', function() {
 
         it("Should zero-reference buckets", function() {
-            expect(bucketGivenNChunks(secsSoFarToday(0), 1)).to.equal(0);
+            expect(bucketGivenNChunks((0), 1)).to.equal(0);
         });
 
 
         it("Should put any time into bucket 0 if there is only one bucket", function() {
-            expect(bucketGivenNChunks(secsSoFarToday(0), 1)).to.equal(0);
-            expect(bucketGivenNChunks(secsSoFarToday(june_11_2014), 1)).to.equal(0);
-            expect(bucketGivenNChunks(secsSoFarToday(MS_IN_DAY + 4000), 1)).to.equal(0);
-            expect(bucketGivenNChunks(secsSoFarToday(MS_IN_DAY * 1231 + 4000), 1)).to.equal(0);
-            expect(bucketGivenNChunks(secsSoFarToday(june_11_2014 + 12345), 1)).to.equal(0);
+            expect(bucketGivenNChunks((0), 1)).to.equal(0);
+            expect(bucketGivenNChunks((june_11_2014), 1)).to.equal(0);
+            expect(bucketGivenNChunks((MS_IN_DAY + 4000), 1)).to.equal(0);
+            expect(bucketGivenNChunks((MS_IN_DAY * 1231 + 4000), 1)).to.equal(0);
+            expect(bucketGivenNChunks((june_11_2014 + 12345), 1)).to.equal(0);
         });
 
         it("Should apportion two buckets appropriately", function() {
-            expect(bucketGivenNChunks(secsSoFarToday(0), 2)).to.equal(0);
-            expect(bucketGivenNChunks(secsSoFarToday(MS_IN_HOUR), 2)).to.equal(0);
-            expect(bucketGivenNChunks(secsSoFarToday((MS_IN_HOUR * 12) - 1), 2)).to.equal(0);
-            expect(bucketGivenNChunks(secsSoFarToday(MS_IN_HOUR * 12), 2)).to.equal(1);
-            expect(bucketGivenNChunks(secsSoFarToday(june_11_2014 + (MS_IN_HOUR * 12)), 2)).to.equal(1);
+            expect(bucketGivenNChunks((0), 2)).to.equal(0);
+            expect(bucketGivenNChunks((MS_IN_HOUR), 2)).to.equal(0);
+            expect(bucketGivenNChunks(((MS_IN_HOUR * 12) - 1), 2)).to.equal(0);
+            expect(bucketGivenNChunks((MS_IN_HOUR * 12), 2)).to.equal(1);
+            expect(bucketGivenNChunks((june_11_2014 + (MS_IN_HOUR * 12)), 2)).to.equal(1);
         });
 
         it("Should apportion 12 buckets appropriately", function() {
 
-            expect(bucketGivenNChunks(secsSoFarToday(0), 12)).to.equal(0);
-            expect(bucketGivenNChunks(secsSoFarToday(MS_IN_HOUR), 12)).to.equal(0);
-            expect(bucketGivenNChunks(secsSoFarToday((MS_IN_HOUR * 11) - 1), 12)).to.equal(5);
-            expect(bucketGivenNChunks(secsSoFarToday(MS_IN_HOUR * 12), 12)).to.equal(6);
-            expect(bucketGivenNChunks(secsSoFarToday(june_11_2014 + (MS_IN_HOUR * 12)), 12)).to.equal(6);
-            expect(bucketGivenNChunks(secsSoFarToday(june_11_2014 - 1), 12)).to.equal(11);
+            expect(bucketGivenNChunks((0), 12)).to.equal(0);
+            expect(bucketGivenNChunks((MS_IN_HOUR), 12)).to.equal(0);
+            expect(bucketGivenNChunks(((MS_IN_HOUR * 11) - 1), 12)).to.equal(5);
+            expect(bucketGivenNChunks((MS_IN_HOUR * 12), 12)).to.equal(6);
+            expect(bucketGivenNChunks((june_11_2014 + (MS_IN_HOUR * 12)), 12)).to.equal(6);
+            expect(bucketGivenNChunks((june_11_2014 - 1), 12)).to.equal(11);
         });
 
 
         it("Should apportion 24 buckets appropriately", function() {
 
-            expect(bucketGivenNChunks(secsSoFarToday(0), 24)).to.equal(0);
-            expect(bucketGivenNChunks(secsSoFarToday(MS_IN_HOUR), 24)).to.equal(1);
-            expect(bucketGivenNChunks(secsSoFarToday((MS_IN_HOUR * 11) - 1), 24)).to.equal(10);
-            expect(bucketGivenNChunks(secsSoFarToday(MS_IN_HOUR * 12), 24)).to.equal(12);
-            expect(bucketGivenNChunks(secsSoFarToday(june_11_2014 + (MS_IN_HOUR * 12)), 24)).to.equal(12);
-            expect(bucketGivenNChunks(secsSoFarToday(june_11_2014 - 1), 24)).to.equal(23);
+            expect(bucketGivenNChunks((0), 24)).to.equal(0);
+            expect(bucketGivenNChunks((MS_IN_HOUR), 24)).to.equal(1);
+            expect(bucketGivenNChunks(((MS_IN_HOUR * 11) - 1), 24)).to.equal(10);
+            expect(bucketGivenNChunks((MS_IN_HOUR * 12), 24)).to.equal(12);
+            expect(bucketGivenNChunks((june_11_2014 + (MS_IN_HOUR * 12)), 24)).to.equal(12);
+            expect(bucketGivenNChunks((june_11_2014 - 1), 24)).to.equal(23);
         });
 
 
