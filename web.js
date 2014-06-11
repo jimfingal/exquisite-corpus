@@ -21,9 +21,24 @@ app.get('/', function(req, res) {
     });
 });
 
+var secsinday = 60 * 60 * 24;
+
+var secsSoFarToday = function(unixtime) {
+  return (unixtime / 1000) % secsinday;
+};
+
+var bucketGivenNChunks = function(secs_so_far, n) {
+  var bucket_size = secsinday / n;
+  console.log("Secs so far: " + secs_so_far);
+  console.log("Bockets: " + n);
+  console.log("Bucket Size: " + bucket_size);
+  var bucket = Math.round(secs_so_far / bucket_size);
+  console.log("Bucket: " + bucket);
+  return bucket;
+};
 
 var map = function() {
-    emit(new Date(this.created_at), {'screen_name': this.user.screen_name, 'text': this.text});
+  emit(new Date(this.created_at), {'screen_name': this.user.screen_name, 'text': this.text});
 };
 
 var reduce = function(key, values) {

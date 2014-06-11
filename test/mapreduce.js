@@ -1,4 +1,4 @@
-var config = require('../server/config');
+var config = require('../lib/config');
 var MongoClient = require('mongodb').MongoClient;
 
 /*

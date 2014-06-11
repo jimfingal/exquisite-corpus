@@ -4,6 +4,8 @@
   "description": "TBD",
   "private": true,
   "devDependencies": {
+    "chai": "^1.9.1",
+    "mocha": "^1.20.1",
     "nodemon": "^1.1.1"
   },
   "dependencies": {
@@ -26,7 +28,7 @@
     "npm": "1.4.6"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node_modules/.bin/mocha",
     "postinstall": "node_modules/.bin/bower install"
   },
   "repository": {
