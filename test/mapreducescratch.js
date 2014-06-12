@@ -55,6 +55,7 @@ var mapReduce = function(mapper, reducer) {
     });
 };
 
+/*
 var SECS_IN_DAY = 60 * 60 * 24;
 var MS_IN_DAY = SECS_IN_DAY * 1000;
 
@@ -176,5 +177,6 @@ var map2 = function() {
 };
 
 mapReduce(map2, reduce);
+*/
 
 

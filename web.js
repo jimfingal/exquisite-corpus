@@ -5,6 +5,7 @@ var express = require('express'),
   flow = require("asyncflow"),
   config = require('./lib/config'),
   mongohelper = require('./lib/mongohelper'),
+  streamhandler = require('./lib/streamhandler'),
   io = require('socket.io');
 
 var app = express();
@@ -35,7 +36,9 @@ app.get('/tweets/', function(req, res) {
       { $sort: {'created_at': 1} }
     ],
     function(err, results, stats) {
-      console.log(err);
+      if (err) {
+        console.log(err);
+      }
       res.json(results);
     }
   );
@@ -60,8 +63,9 @@ flow(function() {
 
   console.log('Listening on: ' + app.get('port'));
 
-  //console.log("Listening to stream");
-  //streamhandler.streamUsersInDB();
+  console.log("Listening to stream");
+  streamhandler.streamUsersInDB();
+
 });
 
 
