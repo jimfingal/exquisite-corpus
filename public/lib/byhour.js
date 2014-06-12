@@ -11,6 +11,10 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery'],
   var colors = [];
   var current_scale = {};
 
+
+  var current_dataset;
+  var current_bands;
+
   var svg;
 
   colors.push([c1, c2, c2]);
@@ -83,12 +87,12 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery'],
   };
 
 
-  ByHour.resizeGraph = function(dataset, bands) {
+  ByHour.resizeGraph = function() {
 
-        setScale(dataset, bands);
+        setScale(ByHour.current_dataset, ByHour.current_bands);
 
-        var bars = svg.selectAll("rect").data(dataset);
-        scaleBars(bars.transition().duration(1), bands);
+        var bars = svg.selectAll("rect").data(ByHour.current_dataset);
+        scaleBars(bars.transition().duration(1), ByHour.current_bands);
 
         //var text = svg.selectAll("text").data(dataset);
         //scaleText(text, bands);
@@ -120,14 +124,15 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery'],
 
     svg = this_svg;
 
-
     var bands = DEFAULT_BANDS;
 
-    current_bands = bands;
+    ByHour.current_bands = bands;
 
     $.getJSON('/tweets/bytime/' + bands, function(ds) {
 
         current_dataset = cleanedDataset(ds, bands);
+
+        ByHour.current_dataset = current_dataset;
 
         var key = function(d) {
             return d._id;
