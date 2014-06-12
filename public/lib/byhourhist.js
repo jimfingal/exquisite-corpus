@@ -11,7 +11,6 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery', 'lib/timehelper'],
 
   var c1 = 205, c2 = 147, c3 = 176;
   var colors = [];
-  var current_scale = {};
 
 
   var current_dataset;
@@ -32,7 +31,22 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery', 'lib/timehelper'],
 
   colors = colors.reverse();
 
-  var onChange = function() {
+
+  var current_scale = {};
+
+  var keyFuntion = function(d) {
+      return d.time;
+  };
+
+  var valueFunction = function(d) {
+      return d.tweets.length;
+  };
+
+  var scaledValue = function(d) {
+      return current_scale.y(valueFunction(d));
+  };
+
+  var onResize = function() {
 
   };
 
@@ -56,7 +70,7 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery', 'lib/timehelper'],
   var setScale = function(current_dataset, bands) {
 
     var yScale = d3.scale.linear()
-        .domain([0, d3.max(current_dataset, function(d) { return d.tweets.length; })])
+        .domain([0, d3.max(current_dataset, valueFunction)])
         .range([0, $('svg').attr("height")]);
 
     var xScale = d3.scale.ordinal()
@@ -73,7 +87,7 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery', 'lib/timehelper'],
                 return current_scale.x(i);
             })
             .attr("y", function(d) {
-                return $('svg').attr("height") - current_scale.y(d.tweets.length);
+                return $('svg').attr("height") - scaledValue(d);
             })
             .attr("width", current_scale.x.rangeBand())
             .attr("height", function(d) {
@@ -88,7 +102,7 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery', 'lib/timehelper'],
             return current_scale.x(i) + current_scale.x.rangeBand() / 2;
            })
            .attr("y", function(d) {
-                return $('svg').attr("height") - current_scale.y(d.tweets.length) + 14;
+                return $('svg').attr("height") - scaledValue(d) + 14;
            });
   };
 
@@ -164,12 +178,12 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery', 'lib/timehelper'],
            .append("rect")
            .attr("fill", function(d) {
                 var height = $('svg').attr("height");
-                return getFillStyle(current_scale.y(d.tweets.length) / height);
+                return getFillStyle(scaledValue(d) / height);
             })
            .on("mouseover", function(d) {
                 d3.select(this)
                   .transition(1000)
-                  .attr("fill", getFillStyle(current_scale.y(d.tweets.length) / $('svg').attr("height"), 1));
+                  .attr("fill", getFillStyle(scaledValue(d) / $('svg').attr("height"), 1));
 
                 //Get this bar's x/y values, then augment for the tooltip
                 var xPosition = parseFloat(d3.select(this).attr("x")) + current_scale.x.rangeBand() / 2;
@@ -188,7 +202,7 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery', 'lib/timehelper'],
            .on("mouseout", function(d) {
                 d3.select(this)
                   .transition(1000)
-                  .attr("fill", getFillStyle(current_scale.y(d.tweets.length) /  $('svg').attr("height")));
+                  .attr("fill", getFillStyle(scaledValue(d) /  $('svg').attr("height")));
 
                 d3.select("#tooltip").classed("hidden", true);
 

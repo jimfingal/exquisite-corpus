@@ -80,9 +80,20 @@ svg {
 .dropdown-menu {
     z-index:10;
     position:relative;
-    
+
 }
 
 #description {
     margin: 20px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
 }
