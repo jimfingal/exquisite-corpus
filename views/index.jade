@@ -8,7 +8,10 @@ html
     script(data-main="requireconfig", src="/bower_components/requirejs/require.js")
 
   body
-    h1 Hello World!
+    h1#description Tweets by Hour
+    div#menu
+      button(type="button" class="btn btn-default btn-lg")
+        span(class='glyphicon glyphicon-list')
     div#tooltip.hidden
       p
         b Twitter Stats

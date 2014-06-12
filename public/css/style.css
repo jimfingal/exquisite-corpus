@@ -69,3 +69,14 @@ svg {
     font-size: 16px;
     line-height: 20px;
 }
+
+#menu {
+    position: absolute;
+    z-index: 10;
+    right: 10px;
+    top: 10px;
+}
+
+#description {
+    margin: 20px;
+}
