@@ -1,4 +1,4 @@
-define(['d3', 'lib/byhourhist.js'],
+define(['d3', 'lib/byhour.js'],
        function(d3, ByHour) {
 
   var socket;
