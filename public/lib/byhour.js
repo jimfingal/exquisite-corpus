@@ -1,11 +1,13 @@
-define(['d3', 'lib/easing.js', 'underscore', 'jquery'],
-       function(d3, easing, _, $) {
+define(['d3', 'lib/easing.js', 'underscore', 'jquery', 'lib/timehelper'],
+       function(d3, easing, _, $, Timehelper) {
 
   var easing_functions = easing;
 
   var ByHour = {};
 
+  var initialized = false;
   var DEFAULT_BANDS = 24;
+  var DEFAULT_UTC_OFFSET = -7;
 
   var c1 = 205, c2 = 147, c3 = 176;
   var colors = [];
@@ -50,7 +52,7 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery'],
   var setScale = function(current_dataset, bands) {
 
     var yScale = d3.scale.linear()
-        .domain([0, d3.max(current_dataset, function(d) { return d.value.tweets.length; })])
+        .domain([0, d3.max(current_dataset, function(d) { return d.tweets.length; })])
         .range([0, $('svg').attr("height")]);
 
     var xScale = d3.scale.ordinal()
@@ -67,11 +69,11 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery'],
                 return current_scale.x(i);
             })
             .attr("y", function(d) {
-                return $('svg').attr("height") - current_scale.y(d.value.tweets.length);
+                return $('svg').attr("height") - current_scale.y(d.tweets.length);
             })
             .attr("width", current_scale.x.rangeBand())
             .attr("height", function(d) {
-                return current_scale.y(d.value.tweets.length);
+                return current_scale.y(d.tweets.length);
             });
   };
 
@@ -82,7 +84,7 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery'],
             return current_scale.x(i) + current_scale.x.rangeBand() / 2;
            })
            .attr("y", function(d) {
-                return $('svg').attr("height") - current_scale.y(d.value.tweets.length) + 14;
+                return $('svg').attr("height") - current_scale.y(d.tweets.length) + 14;
            });
   };
 
@@ -100,42 +102,54 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery'],
 
 
   var getEmptyRecord = function(id) {
-    return {
-        '_id': id,
-        'value': { 'tweets': [] }
-    };
+    return { id: [] };
   };
 
-  var cleanedDataset = function(dataset, bands) {
+  var cleanedDataset = function(dataset, bands, utc_offset) {
 
-    var cloned_ds = _.clone(dataset);
+    var hour_map = _.groupBy(dataset, function(d) {
+      return Timehelper.bucketGivenNChunks(new Date(d['created_at']).getTime(), bands, utc_offset);
+    })
 
     _.each(_.range(bands), function(i) {
-        if (!cloned_ds[i] || cloned_ds[i]['_id'] !== i) {
-            console.log('Got here');
-            cloned_ds.splice(i, 0, getEmptyRecord(i));
-        }
+      if (!_.has(hour_map, i)) {
+        hour_map[i] = [];
+      }
     });
 
-    return cloned_ds;
+    var new_dataset = [];
+
+    _.each(_.pairs(hour_map), function(pair) {
+      new_dataset[pair[0]] = {'time': pair[0], 'tweets': pair[1]};
+    });
+
+    return new_dataset;
   };
 
   ByHour.initializeGraph = function(this_svg) {
 
+
+    if (initialized) {
+        return;
+    }
+
+    initialized = true;
+
     svg = this_svg;
 
     var bands = DEFAULT_BANDS;
+    var utc_offset = DEFAULT_UTC_OFFSET;
 
     ByHour.current_bands = bands;
 
-    $.getJSON('/tweets/bytime/' + bands, function(ds) {
+    $.getJSON('/tweets/', function(ds) {
 
-        current_dataset = cleanedDataset(ds, bands);
+        current_dataset = cleanedDataset(ds, bands, utc_offset);
 
         ByHour.current_dataset = current_dataset;
 
         var key = function(d) {
-            return d._id;
+            return d.time;
         };
 
         setScale(current_dataset, bands);
@@ -146,12 +160,12 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery'],
            .append("rect")
            .attr("fill", function(d) {
                 var height = $('svg').attr("height");
-                return getFillStyle(current_scale.y(d.value.tweets.length) / height);
+                return getFillStyle(current_scale.y(d.tweets.length) / height);
             })
            .on("mouseover", function(d) {
                 d3.select(this)
                   .transition(1000)
-                  .attr("fill", getFillStyle(current_scale.y(d.value.tweets.length) / $('svg').attr("height"), 1));
+                  .attr("fill", getFillStyle(current_scale.y(d.tweets.length) / $('svg').attr("height"), 1));
 
                 //Get this bar's x/y values, then augment for the tooltip
                 var xPosition = parseFloat(d3.select(this).attr("x")) + current_scale.x.rangeBand() / 2;
@@ -162,7 +176,7 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery'],
                   .style("left", xPosition + "px")
                   .style("top", yPosition + "px")
                   .select("#value")
-                  .text(d._id + ":00 had " + d.value.tweets.length + " tweets.");
+                  .text(d.time + ":00 had " + d.tweets.length + " tweets.");
 
                 //Show the tooltip
                 d3.select("#tooltip").classed("hidden", false);
@@ -170,7 +184,7 @@ define(['d3', 'lib/easing.js', 'underscore', 'jquery'],
            .on("mouseout", function(d) {
                 d3.select(this)
                   .transition(1000)
-                  .attr("fill", getFillStyle(current_scale.y(d.value.tweets.length) /  $('svg').attr("height")));
+                  .attr("fill", getFillStyle(current_scale.y(d.tweets.length) /  $('svg').attr("height")));
 
                 d3.select("#tooltip").classed("hidden", true);
 

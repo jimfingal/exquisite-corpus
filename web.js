@@ -5,7 +5,6 @@ var express = require('express'),
   flow = require("asyncflow"),
   config = require('./lib/config'),
   mongohelper = require('./lib/mongohelper'),
-  timehelper = require('./lib/timehelper'),
   io = require('socket.io');
 
 var app = express();
@@ -23,24 +22,24 @@ app.get('/', function(req, res) {
 });
 
 
-var reduce = function(key, values) {
-    return {'tweets': values};
-};
-
-app.get('/tweets/bytime/:buckets', function(req, res) {
-  mongohelper.mapReduce(
+app.get('/tweets/', function(req, res) {
+  mongohelper.aggregate(
     config.mongo.TWEET_COLLECTION,
-    timehelper.mapper,
-    reduce,
-    timehelper.getScope(req.params.buckets, -7),
+    [{ $project:
+        {'id_str': 1,
+          'text': 1,
+          'created_at': 1,
+          'screen_name': '$user.screen_name'
+        }
+      },
+      { $sort: {'created_at': 1} }
+    ],
     function(err, results, stats) {
       console.log(err);
       res.json(results);
     }
   );
 });
-
-
 
 var initDb = flow.wrap(mongohelper.initDb);
 

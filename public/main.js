@@ -1,4 +1,4 @@
-requirejs(['lib/sockethelper', 'jquery', 'lib/visualizer'],
+requirejs(['lib/sockethelper', 'jquery', 'lib/visualizer', 'bootstrap'],
   function(sockethelper, $, Visualizer) {
     var socket = sockethelper.getSocket();
 
